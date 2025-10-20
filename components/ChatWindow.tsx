@@ -1,0 +1,405 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ChatMessage } from '../types';
+import { UserIcon } from './icons/UserIcon';
+import { OracleIcon } from './icons/OracleIcon';
+import { SendIcon } from './icons/SendIcon';
+import { SpinnerIcon } from './icons/SpinnerIcon';
+import { SpeakerPlayIcon } from './icons/SpeakerPlayIcon';
+import { SpeakerStopIcon } from './icons/SpeakerStopIcon';
+import { MicrophoneIcon } from './icons/MicrophoneIcon';
+import { HeadphonesIcon } from './icons/HeadphonesIcon';
+import { getSpeech } from '../services/geminiService';
+import { decode, decodeAudioData } from '../utils/audioUtils';
+import { LOADING_MESSAGES } from '../constants';
+
+// FIX: Add type definition for the Web Speech API to resolve "Cannot find name 'SpeechRecognition'".
+interface SpeechRecognition {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: any) => void) | null;
+  onresult: ((event: any) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+// A memoized component to prevent re-rendering of complex markdown content
+const RenderMessageContent = React.memo(({ content }: { content: string }) => {
+  return (
+    <div className="prose prose-sm prose-invert text-gray-300 max-w-none">
+      {content.split('\n').map((line, index) => {
+        if (line.trim().startsWith('* ') || line.trim().startsWith('• ')) {
+          const cleanLine = line.trim().substring(2);
+          const parts = cleanLine.split('**');
+          return (
+            <div key={index} className="flex items-start">
+              <span className="mr-2 mt-1">•</span>
+              <span>
+                {parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))}
+              </span>
+            </div>
+          );
+        }
+        if (/^(🌟|🔮|✨|💫|\*\*सार:\*\*|\*\*मुख्य बातें:\*\*|\*\*सलाह:\*\*)/.test(line)) {
+            const parts = line.split('**');
+            return (
+                <h3 key={index} className="flex items-center gap-2 text-xl font-bold text-purple-300 my-3">
+                    {parts.map((part, i) => (i % 2 === 1 ? <span key={i}>{part}</span> : part))}
+                </h3>
+            );
+        }
+        const parts = line.split('**');
+        return (
+          <p key={index}>
+            {parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : part))}
+          </p>
+        );
+      })}
+    </div>
+  );
+});
+
+
+interface MessageProps {
+  message: ChatMessage;
+  onPlayAudio: (messageId: string, text: string) => void;
+  isPlaying: boolean;
+  stopAudio: () => void;
+  isSpeechLoading: boolean;
+  onButtonClick: (buttonText: string) => void;
+}
+
+const Message: React.FC<MessageProps> = ({ message, onPlayAudio, isPlaying, stopAudio, isSpeechLoading, onButtonClick }) => {
+    const isUser = message.role === 'user';
+
+    const handlePlayClick = () => {
+        if (isPlaying) {
+            stopAudio();
+        } else {
+            onPlayAudio(message.id, message.content);
+        }
+    };
+
+    const [showOverlay, setShowOverlay] = useState(false);
+
+    return (
+        <div className={`flex gap-4 items-start ${isUser ? 'justify-end' : ''}`}>
+            {!isUser && (
+                <div className="w-8 h-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center">
+                    <OracleIcon className="w-5 h-5 text-white" />
+                </div>
+            )}
+            <div className={`max-w-xl p-4 rounded-xl ${isUser ? 'bg-purple-800/80 rounded-br-none' : 'bg-indigo-950/70 rounded-bl-none'}`}>
+                 {message.palmistryAnalysis?.image ? (
+                    <div className="space-y-4">
+                        <div className="relative">
+                            <img src={message.palmistryAnalysis.image} alt="Palm analysis" className="rounded-lg max-w-xs" />
+                            {message.palmistryAnalysis.svgOverlay && showOverlay && (
+                                <div className="absolute inset-0" dangerouslySetInnerHTML={{ __html: message.palmistryAnalysis.svgOverlay }} />
+                            )}
+                        </div>
+                        {message.palmistryAnalysis.svgOverlay && (
+                             <button onClick={() => setShowOverlay(!showOverlay)} className="text-xs bg-indigo-700 hover:bg-indigo-600 px-3 py-1.5 rounded-full transition-colors w-full">
+                                {showOverlay ? 'Hide Overlays' : 'Show Overlays'}
+                            </button>
+                        )}
+                        <RenderMessageContent content={message.content} />
+                    </div>
+                 ) : (
+                    <RenderMessageContent content={message.content} />
+                 )}
+
+                 {message.buttons && (
+                     <div className="mt-4 flex flex-wrap gap-2 border-t border-indigo-700/50 pt-3">
+                         {Object.values(message.buttons).map((buttonText, index) => (
+                           buttonText && <button key={index} onClick={() => onButtonClick(buttonText)} className="text-xs bg-indigo-700 hover:bg-indigo-600 px-3 py-1.5 rounded-full transition-colors">{buttonText}</button>
+                         ))}
+                     </div>
+                 )}
+            </div>
+            {!isUser && message.content && (
+                 <button onClick={handlePlayClick} disabled={isSpeechLoading} className="self-center p-2 rounded-full hover:bg-indigo-700/60 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-wait" aria-label={isPlaying ? "Stop audio" : "Play audio"}>
+                    {isSpeechLoading ? <SpinnerIcon className="w-5 h-5 animate-spin"/> : (isPlaying ? <SpeakerStopIcon className="w-5 h-5" /> : <SpeakerPlayIcon className="w-5 h-5" />)}
+                </button>
+            )}
+            {isUser && (
+                 <div className="w-8 h-8 rounded-full bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                    <UserIcon className="w-5 h-5 text-white" />
+                </div>
+            )}
+        </div>
+    );
+};
+
+interface ChatWindowProps {
+  messages: ChatMessage[];
+  onSendMessage: (message: string) => void;
+  isLoading: boolean;
+  techniqueName: string;
+  userName: string;
+  currentLanguage: string;
+  onStartVoiceChat: () => void;
+}
+
+const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoading, currentLanguage, onStartVoiceChat }) => {
+  const [input, setInput] = useState('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const [isListening, setIsListening] = useState(false);
+
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  const [isSpeechLoadingForId, setIsSpeechLoadingForId] = useState<string | null>(null);
+  
+  const [loadingText, setLoadingText] = useState('');
+  const loadingIntervalRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (isLoading) {
+      const messagesForLang = LOADING_MESSAGES[currentLanguage] || LOADING_MESSAGES['en'];
+      let messageIndex = 0;
+      setLoadingText(messagesForLang[messageIndex]);
+
+      loadingIntervalRef.current = window.setInterval(() => {
+        messageIndex = (messageIndex + 1) % messagesForLang.length;
+        setLoadingText(messagesForLang[messageIndex]);
+      }, 2500);
+    } else {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current);
+        loadingIntervalRef.current = null;
+      }
+    }
+
+    return () => {
+      if (loadingIntervalRef.current) {
+        clearInterval(loadingIntervalRef.current);
+      }
+    };
+  }, [isLoading, currentLanguage]);
+
+  useEffect(() => {
+    const initAudioContext = () => {
+        if (!audioContextRef.current) {
+            audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+        }
+    };
+    initAudioContext();
+    
+    return () => {
+        audioSourceRef.current?.stop();
+        audioContextRef.current?.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        console.warn("Speech recognition not supported in this browser.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = currentLanguage;
+
+    recognition.onstart = () => setIsListening(true);
+    recognition.onend = () => setIsListening(false);
+    recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+    };
+
+    recognition.onresult = (event) => {
+        let finalTranscript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            if (event.results[i].isFinal) {
+                finalTranscript += event.results[i][0].transcript;
+            }
+        }
+        if (finalTranscript) {
+            setInput(prev => prev + finalTranscript);
+        }
+    };
+    
+    recognitionRef.current = recognition;
+  }, [currentLanguage]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (input.trim() && !isLoading) {
+      onSendMessage(input.trim());
+      setInput('');
+    }
+  };
+
+  const handleMicClick = () => {
+    const recognition = recognitionRef.current;
+    if (!recognition) return;
+
+    if (isListening) {
+        recognition.stop();
+    } else {
+        setInput(''); // Clear input before starting
+        recognition.start();
+    }
+  };
+
+  const stopAudio = useCallback(() => {
+    if (audioSourceRef.current) {
+      audioSourceRef.current.stop();
+      audioSourceRef.current = null;
+    }
+    setPlayingMessageId(null);
+  }, []);
+
+  const playAudio = useCallback(async (messageId: string, text: string) => {
+    const audioContext = audioContextRef.current;
+    if (!audioContext) return;
+    
+    if (audioContext.state === 'suspended') {
+        await audioContext.resume();
+    }
+    
+    stopAudio();
+    setIsSpeechLoadingForId(messageId);
+    
+    try {
+      const base64Audio = await getSpeech(text);
+      if (base64Audio && audioContext) {
+        setPlayingMessageId(messageId);
+        const audioBytes = decode(base64Audio);
+        const audioBuffer = await decodeAudioData(audioBytes, audioContext, 24000, 1);
+        const source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.onended = () => {
+          if (playingMessageId === messageId) {
+            setPlayingMessageId(null);
+            audioSourceRef.current = null;
+          }
+        };
+        source.start();
+        audioSourceRef.current = source;
+      }
+    } catch (error) {
+        console.error("Error playing audio:", error);
+    } finally {
+        setIsSpeechLoadingForId(null);
+    }
+  }, [stopAudio, playingMessageId]);
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (!isLoading) {
+      onSendMessage(suggestion);
+    }
+  };
+
+  const lastMessage = messages[messages.length - 1];
+  const showSuggestions = !isLoading && lastMessage?.role === 'model' && lastMessage.suggestions && lastMessage.suggestions.length > 0;
+
+  const placeholderText = isListening 
+    ? (currentLanguage === 'hi' ? 'सुन रही हूँ...' : 'Listening...') 
+    : (currentLanguage === 'hi' ? 'एक प्रश्न पूछें...' : 'Ask a question...');
+
+  return (
+    <div className="w-full max-w-3xl h-full flex flex-col bg-indigo-950/40 border border-indigo-800/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in relative">
+      <div id="messages" className="flex-grow p-6 space-y-6 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4f46e5 #1e1b4b' }}>
+        {messages.map((msg) => (
+          <Message 
+            key={msg.id} 
+            message={msg}
+            onPlayAudio={playAudio}
+            isPlaying={playingMessageId === msg.id}
+            stopAudio={stopAudio}
+            isSpeechLoading={isSpeechLoadingForId === msg.id}
+            onButtonClick={handleSuggestionClick}
+          />
+        ))}
+        {isLoading && (
+            <div className="flex gap-4 items-start">
+                 <div className="w-8 h-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center">
+                    <OracleIcon className="w-5 h-5 text-white" />
+                </div>
+                <div className="max-w-lg p-4 rounded-xl bg-indigo-950/70 rounded-bl-none">
+                    <div className="flex items-center gap-2 text-gray-400">
+                        <SpinnerIcon className="w-5 h-5 animate-spin" />
+                        <span>{loadingText}</span>
+                    </div>
+                </div>
+            </div>
+        )}
+        <div ref={messagesEndRef} />
+      </div>
+       {showSuggestions && (
+        <div className="p-4 border-t border-indigo-800/50">
+            <div className="flex flex-wrap justify-center gap-2">
+            {lastMessage.suggestions!.map((suggestion, index) => (
+                <button
+                key={index}
+                onClick={() => handleSuggestionClick(suggestion)}
+                className="text-sm bg-indigo-800/70 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors"
+                >
+                {suggestion}
+                </button>
+            ))}
+            </div>
+        </div>
+      )}
+      <div className="p-4 bg-black/30 border-t border-indigo-800/50">
+        <form onSubmit={handleSend} className="flex items-center gap-4">
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder={placeholderText}
+            disabled={isLoading}
+            className="w-full bg-indigo-900 border border-indigo-700 rounded-lg p-3 text-white placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50"
+          />
+           <button
+                type="button"
+                onClick={onStartVoiceChat}
+                disabled={isLoading}
+                title="Start Live Conversation"
+                className="p-3 rounded-full bg-teal-600 hover:bg-teal-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500"
+                aria-label="Start Live Conversation"
+            >
+                <HeadphonesIcon className="w-6 h-6 text-white" />
+            </button>
+           <button
+                type="button"
+                onClick={handleMicClick}
+                disabled={isLoading}
+                title={currentLanguage === 'hi' ? "बोलने के लिए दबाएँ" : "Press to speak"}
+                className={`p-3 rounded-full transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                aria-label="Use microphone"
+            >
+                <MicrophoneIcon className="w-6 h-6 text-white" />
+            </button>
+          <button
+            type="submit"
+            disabled={isLoading || !input.trim()}
+            className="bg-purple-600 text-white p-3 rounded-full hover:bg-purple-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500"
+            aria-label="Send message"
+          >
+            <SendIcon className="w-6 h-6" />
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ChatWindow;

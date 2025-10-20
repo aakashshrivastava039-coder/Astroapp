@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/assets/icon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vibe Oracle</title>
+    
+    <!-- PWA Manifest and Theme Color -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#4f46e5" />
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom scrollbar for a more aesthetic feel */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e1b4b; /* indigo-950 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4f46e5; /* indigo-600 */
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6366f1; /* indigo-500 */
+      }
+      
+      /* Fade-in animation for screen transitions */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+
+      /* Slower pulse for voice visualizer */
+      @keyframes pulse-slow {
+        50% {
+          opacity: .75;
+        }
+      }
+      .animate-pulse-slow {
+        animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      /* Faster pulse for connecting state */
+      @keyframes pulse-connecting {
+        0%, 100% { 
+          transform: scale(1); 
+          opacity: 0.8; 
+        }
+        50% { 
+          transform: scale(1.05); 
+          opacity: 1; 
+        }
+      }
+      .animate-pulse-connecting {
+        animation: pulse-connecting 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      }
+
+      /* Prevent text selection on buttons for a more native feel */
+      button {
+        user-select: none;
+        -webkit-user-select: none; /* For Safari */
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.25.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-white">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(registration => {
+              console.log('ServiceWorker registered: ', registration);
+            })
+            .catch(registrationError => {
+              console.log('ServiceWorker registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
+  </body>
+</html>

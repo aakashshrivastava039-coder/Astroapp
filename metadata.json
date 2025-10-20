@@ -1,0 +1,8 @@
+{
+  "name": "Copy of Copy of Vibe Oracle",
+  "description": "Vibe Oracle combines ancient prediction techniques with modern AI emotional understanding to provide personalized, human-like predictions through a chat interface.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
