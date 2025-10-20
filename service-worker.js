@@ -5,7 +5,6 @@ const API_URL = 'https://generativelanguage.googleapis.com';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
-  '/index.tsx',
   '/assets/icon.svg',
   'manifest.json'
 ];
@@ -13,7 +12,6 @@ const APP_SHELL_URLS = [
 // All resources to pre-cache for full offline functionality.
 const URLS_TO_CACHE = [
   ...APP_SHELL_URLS,
-  'https://cdn.tailwindcss.com'
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,17 +1,18 @@
-
-
 import { GoogleGenAI, Modality } from "@google/genai";
 import { UserData, ChatMessage, Technique, PredictionResponse, LocalizedButtons } from '../types';
 
 // IMPORTANT: The API key must be set in the environment variables.
 const API_KEY = process.env.API_KEY;
 
-if (!API_KEY) {
-  // A simple check, though the environment should have it pre-configured.
-  console.error("API_KEY environment variable not set.");
+// Lazy initialization of the AI client to prevent app crash on startup
+function getAiClient() {
+  if (!API_KEY) {
+    console.error("API_KEY environment variable not set.");
+    return null;
+  }
+  return new GoogleGenAI({ apiKey: API_KEY });
 }
 
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
 
 function getOfflineMessage(language: string): string {
     const messages: { [key: string]: string } = {
@@ -44,6 +45,11 @@ export async function getPredictionStream(
 ): Promise<PredictionResponse> {
     if (!navigator.onLine) {
         return { replyText: getOfflineMessage(userData.language) };
+    }
+    
+    const ai = getAiClient();
+    if (!ai) {
+        return { replyText: "The connection to the cosmic oracle is not configured. Please ensure the API Key is set correctly." };
     }
 
     const systemInstruction = `You are the Vibe Oracle, a wise, empathetic, and modern cosmic guide. Your purpose is to provide guidance that is not only astrologically sound but also deeply resonant and emotionally intelligent. You speak with a poetic yet clear voice, making ancient wisdom accessible and connectable.
@@ -271,6 +277,12 @@ export async function getSpeech(text: string): Promise<string | null> {
     if (!navigator.onLine) {
         console.error("Cannot generate speech while offline.");
         return null;
+    }
+    
+    const ai = getAiClient();
+    if (!ai) {
+      console.error("AI Client not available for speech generation.");
+      return null;
     }
 
     try {

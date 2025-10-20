@@ -10,11 +10,14 @@ import { StopIcon } from './icons/StopIcon';
 // IMPORTANT: The API key must be set in the environment variables.
 const API_KEY = process.env.API_KEY;
 
-if (!API_KEY) {
-  console.error("API_KEY environment variable not set.");
+// Lazy initialization of the AI client to prevent app crash on startup
+function getAiClient() {
+  if (!API_KEY) {
+    console.error("API_KEY environment variable not set for Voice Chat.");
+    return null;
+  }
+  return new GoogleGenAI({ apiKey: API_KEY });
 }
-
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
 
 interface VoiceChatProps {
   userData: UserData;
@@ -78,6 +81,7 @@ interface TranscriptionWithFinal {
 
 const VoiceChat: React.FC<VoiceChatProps> = ({ userData, language, techniqueName, chatHistory, onEndSession }) => {
     const [status, setStatus] = useState<'idle' | 'connecting' | 'listening' | 'speaking' | 'error'>('idle');
+    const [statusText, setStatusText] = useState('Starting session...');
     const [transcripts, setTranscripts] = useState<VoiceTranscript[]>([]);
     
     // FIX: Changed LiveSession to `any` as it is not an exported type from the SDK.
@@ -138,7 +142,16 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ userData, language, techniqueName
 
     const handleStartSession = useCallback(async () => {
         setStatus('connecting');
+        setStatusText('Connecting to the cosmos...');
         setTranscripts([]);
+
+        const ai = getAiClient();
+        if (!ai) {
+          setStatus('error');
+          setStatusText('Oracle is unavailable. (No API Key)');
+          // No cleanup needed here as nothing has been initialized yet
+          return;
+        }
 
         const chatHistorySummary = chatHistory
             .slice(-4) // Get last 4 messages
@@ -184,6 +197,7 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
                     onopen: () => {
                         console.log('Session opened.');
                         setStatus('listening');
+                        setStatusText('Listening...');
                         const source = inputAudioContextRef.current!.createMediaStreamSource(stream);
                         mediaStreamSourceRef.current = source;
                         const scriptProcessor = inputAudioContextRef.current!.createScriptProcessor(4096, 1, 1);
@@ -216,6 +230,7 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
                         }
                         if (message.serverContent?.outputTranscription) {
                             setStatus('speaking');
+                            setStatusText('Oracle is speaking...');
                             // FIX: Use a type assertion to access the 'isFinal' property.
                             const { text, isFinal } = message.serverContent.outputTranscription as unknown as TranscriptionWithFinal;
                              setTranscripts(prev => {
@@ -246,6 +261,7 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
                                 audioSourcesRef.current.delete(source);
                                 if (audioSourcesRef.current.size === 0) {
                                     setStatus('listening');
+                                    setStatusText('Listening...');
                                 }
                             };
                         }
@@ -258,6 +274,7 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
                     onerror: (e) => {
                         console.error('Session error:', e);
                         setStatus('error');
+                        setStatusText('Connection lost.');
                         cleanup();
                     }
                 }
@@ -266,6 +283,7 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
         } catch (error) {
             console.error("Failed to start voice session:", error);
             setStatus('error');
+            setStatusText('Could not start session.');
             cleanup();
         }
     }, [language, userData, techniqueName, chatHistory, cleanup]);
@@ -279,20 +297,10 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const getStatusText = () => {
-        switch (status) {
-            case 'connecting': return 'Connecting to the cosmos...';
-            case 'listening': return 'Listening...';
-            case 'speaking': return 'Oracle is speaking...';
-            case 'error': return 'Connection lost.';
-            default: return 'Starting session...';
-        }
-    }
-
     return (
         <div className="w-full h-full flex flex-col items-center justify-between p-8 bg-gradient-to-b from-gray-900 via-indigo-950 to-black animate-fade-in">
             <div className="flex-grow flex items-center justify-center">
-                 <VoiceVisualizer status={status} statusText={getStatusText()} />
+                 <VoiceVisualizer status={status} statusText={statusText} />
             </div>
 
             <div className="w-full max-w-3xl h-48 overflow-y-auto text-center space-y-2 mb-8">
