@@ -1,12 +1,15 @@
+// FIX: Removed reference to vite client types as it's no longer needed after switching to process.env.
 import { GoogleGenAI, Modality } from "@google/genai";
 import { UserData, ChatMessage, Technique, PredictionResponse, LocalizedButtons } from '../types';
 
 // IMPORTANT: The API key must be set in the environment variables.
+// FIX: Switched from Vite-specific `import.meta.env.VITE_API_KEY` to `process.env.API_KEY` to align with coding guidelines and resolve TypeScript errors.
 const API_KEY = process.env.API_KEY;
 
 // Lazy initialization of the AI client to prevent app crash on startup
 function getAiClient() {
   if (!API_KEY) {
+    // FIX: Updated error message to reflect the change to `API_KEY`.
     console.error("API_KEY environment variable not set.");
     return null;
   }
@@ -112,7 +115,8 @@ Your entire response must be a single block of markdown text. At the VERY END, y
       model: 'gemini-2.5-flash',
       contents: [{role: 'user', parts: [{text: userPrompt}]}],
       config: {
-        systemInstruction: {role: 'model', parts: [{text: systemInstruction}]},
+        // FIX: systemInstruction should be a string, not a Content object.
+        systemInstruction: systemInstruction,
       },
     });
     

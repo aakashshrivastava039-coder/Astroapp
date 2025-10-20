@@ -1,3 +1,4 @@
+// FIX: Removed reference to vite client types as it's no longer needed after switching to process.env.
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 // FIX: The 'LiveSession' type is not exported from the '@google/genai' package.
 import { GoogleGenAI, Modality, LiveServerMessage } from "@google/genai";
@@ -8,11 +9,13 @@ import { MicrophoneIcon } from './icons/MicrophoneIcon';
 import { StopIcon } from './icons/StopIcon';
 
 // IMPORTANT: The API key must be set in the environment variables.
+// FIX: Switched from Vite-specific `import.meta.env.VITE_API_KEY` to `process.env.API_KEY` to align with coding guidelines and resolve TypeScript errors.
 const API_KEY = process.env.API_KEY;
 
 // Lazy initialization of the AI client to prevent app crash on startup
 function getAiClient() {
   if (!API_KEY) {
+    // FIX: Updated error message to reflect the change to `API_KEY`.
     console.error("API_KEY environment variable not set for Voice Chat.");
     return null;
   }
