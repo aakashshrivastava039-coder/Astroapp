@@ -13,9 +13,6 @@ const APP_SHELL_URLS = [
 // All resources to pre-cache for full offline functionality.
 const URLS_TO_CACHE = [
   ...APP_SHELL_URLS,
-  'https://aistudiocdn.com/react@^19.2.0',
-  'https://aistudiocdn.com/react-dom@^19.2.0/',
-  'https://aistudiocdn.com/@google/genai@^1.25.0',
   'https://cdn.tailwindcss.com'
 ];
 
