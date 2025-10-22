@@ -69,10 +69,13 @@ interface MessageProps {
   stopAudio: () => void;
   isSpeechLoading: boolean;
   onButtonClick: (buttonText: string) => void;
+  isLoading?: boolean;
+  loadingText?: string;
 }
 
-const Message: React.FC<MessageProps> = ({ message, onPlayAudio, isPlaying, stopAudio, isSpeechLoading, onButtonClick }) => {
+const Message: React.FC<MessageProps> = ({ message, onPlayAudio, isPlaying, stopAudio, isSpeechLoading, onButtonClick, isLoading, loadingText }) => {
     const isUser = message.role === 'user';
+    const showLoadingIndicator = !isUser && isLoading && !message.content;
 
     const handlePlayClick = () => {
         if (isPlaying) {
@@ -92,7 +95,12 @@ const Message: React.FC<MessageProps> = ({ message, onPlayAudio, isPlaying, stop
                 </div>
             )}
             <div className={`max-w-xl p-4 rounded-xl ${isUser ? 'bg-purple-800/80 rounded-br-none' : 'bg-indigo-950/70 rounded-bl-none'}`}>
-                 {message.palmistryAnalysis?.image ? (
+                 {showLoadingIndicator ? (
+                    <div className="flex items-center gap-2 text-gray-400">
+                        <SpinnerIcon className="w-5 h-5 animate-spin" />
+                        <span>{loadingText}</span>
+                    </div>
+                 ) : message.palmistryAnalysis?.image ? (
                     <div className="space-y-4">
                         <div className="relative">
                             <img src={message.palmistryAnalysis.image} alt="Palm analysis" className="rounded-lg max-w-xs" />
@@ -317,30 +325,22 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
   return (
     <div className="w-full max-w-3xl h-full flex flex-col bg-indigo-950/40 border border-indigo-800/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in relative">
       <div id="messages" className="flex-grow p-6 space-y-6 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4f46e5 #1e1b4b' }}>
-        {messages.map((msg) => (
-          <Message 
-            key={msg.id} 
-            message={msg}
-            onPlayAudio={playAudio}
-            isPlaying={playingMessageId === msg.id}
-            stopAudio={stopAudio}
-            isSpeechLoading={isSpeechLoadingForId === msg.id}
-            onButtonClick={handleSuggestionClick}
-          />
-        ))}
-        {isLoading && (
-            <div className="flex gap-4 items-start">
-                 <div className="w-8 h-8 rounded-full bg-indigo-500 flex-shrink-0 flex items-center justify-center">
-                    <OracleIcon className="w-5 h-5 text-white" />
-                </div>
-                <div className="max-w-lg p-4 rounded-xl bg-indigo-950/70 rounded-bl-none">
-                    <div className="flex items-center gap-2 text-gray-400">
-                        <SpinnerIcon className="w-5 h-5 animate-spin" />
-                        <span>{loadingText}</span>
-                    </div>
-                </div>
-            </div>
-        )}
+        {messages.map((msg, index) => {
+          const isLastMessage = index === messages.length - 1;
+          return (
+            <Message 
+              key={msg.id} 
+              message={msg}
+              onPlayAudio={playAudio}
+              isPlaying={playingMessageId === msg.id}
+              stopAudio={stopAudio}
+              isSpeechLoading={isSpeechLoadingForId === msg.id}
+              onButtonClick={handleSuggestionClick}
+              isLoading={isLoading && isLastMessage}
+              loadingText={loadingText}
+            />
+          );
+        })}
         <div ref={messagesEndRef} />
       </div>
        {showSuggestions && (
