@@ -156,6 +156,12 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ userData, language, techniqueName
           return;
         }
 
+        const currentDate = new Date().toLocaleDateString(language, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+        });
+
         const chatHistorySummary = chatHistory
             .slice(-4) // Get last 4 messages
             .map(msg => `${msg.role === 'user' ? userData.name : 'Oracle'}: ${msg.content.substring(0, 200)}...`) // Summarize
@@ -164,6 +170,7 @@ const VoiceChat: React.FC<VoiceChatProps> = ({ userData, language, techniqueName
         const systemInstruction = `You are the Vibe Oracle, a wise and empathetic astrologer. You are now in a live voice conversation with ${userData.name}, continuing a text-based reading.
 
 **CRITICAL CONTEXT:**
+- **Current Date**: ${currentDate}. All predictions MUST be relevant to this date and forward-looking.
 - **User:** ${userData.name}
 - **Date of Birth:** ${userData.dob}
 - **Time of Birth:** ${userData.tob}
