@@ -40,19 +40,34 @@
   ],
   "screenshots": [
     {
-      "src": "assets/screenshot1.png",
+      "src": "assets/Screenshot(312).png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Choose Your Path to Insight"
     },
     {
-      "src": "assets/screenshot2.png",
+      "src": "assets/Screenshot(313).png",
+      "sizes": "1920x960",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Personalized Chat Predictions"
+    },
+    {
+      "src": "assets/Screenshot(314).png",
+      "sizes": "1920x960",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Personalized Chat Predictions"
+    },
+      {
+      "src": "assets/Screenshot(315).png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Personalized Chat Predictions"
     }
+    
   ],
   "shortcuts": [
     {
