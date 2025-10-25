@@ -1,19 +1,19 @@
-const CACHE_NAME = 'vibe-oracle-cache-v9'; // Bump version for new assets/paths
+const CACHE_NAME = 'vibe-oracle-cache-v11'; // Bump version for new assets/paths
 const API_URL_PREFIX = 'https://generativelanguage.googleapis.com';
 
 // App Shell: Core files needed for the app to run offline.
-// Use relative paths to be more robust.
+// Use absolute paths to be more robust.
 // IMPORTANT: Removed index.tsx as it's a source file not present in the build output.
 const APP_SHELL_URLS = [
   '/',
-  'index.html',
-  'assets/icon.svg',
-  'manifest.json',
-  'service-worker.js',
-  'assets/icon-192.png',
-  'assets/icon-512.png',
-  'assets/screenshot1.png',
-  'assets/screenshot2.png'
+  '/index.html',
+  '/assets/icon.svg',
+  '/manifest.json',
+  '/service-worker.js',
+  '/assets/icon-192.png',
+  '/assets/icon-512.png',
+  '/assets/screenshot1.png',
+  '/assets/screenshot2.png'
 ];
 
 // Install event: Caches the app shell.
