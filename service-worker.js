@@ -7,7 +7,6 @@ const API_URL_PREFIX = 'https://generativelanguage.googleapis.com';
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
-  '/assets/icon.svg',
   '/manifest.json',
   '/service-worker.js',
   '/assets/icon-192.png',
