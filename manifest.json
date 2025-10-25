@@ -20,13 +20,19 @@
   ],
   "icons": [
     {
-      "src": "/assets/icon-192.png",
+      "src": "assets/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/assets/icon-512.png",
+      "src": "assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -34,28 +40,14 @@
   ],
   "screenshots": [
     {
-      "src": "/assets/Screenshot(312).png",
+      "src": "assets/screenshot1.png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Choose Your Path to Insight"
     },
     {
-      "src": "/assets/Screenshot(313).png",
-      "sizes": "1920x960",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Personalized Chat Predictions"
-    },
-    {
-      "src": "/assets/Screenshot(314).png",
-      "sizes": "1920x960",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Personalized Chat Predictions"
-    },
-    {
-      "src": "/assets/Screenshot(315).png",
+      "src": "assets/screenshot2.png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
@@ -70,13 +62,13 @@
       "url": "/",
       "icons": [
         {
-          "src": "/assets/icon-192.png",
-          "sizes": "192x192",
-          "type": "image/png"
+          "src": "assets/icon-192.png",
+          "sizes": "192x192"
         }
       ]
     }
   ],
+  "related_applications": [],
   "prefer_related_applications": false,
   "launch_handler": {
     "client_mode": "navigate-existing"
