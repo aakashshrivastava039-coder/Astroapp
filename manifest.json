@@ -19,49 +19,48 @@
     "entertainment"
   ],
   "icons": [
-  {
-    "src": "/assets/icon-192.png",
-    "sizes": "192x192",
-    "type": "image/png",
-    "purpose": "any maskable"
-  },
-  {
-    "src": "/assets/icon-512.png",
-    "sizes": "512x512",
-    "type": "image/png",
-    "purpose": "any maskable"
-  }
-]
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
   "screenshots": [
     {
-      "src": "assets/Screenshot(312).png",
+      "src": "/assets/Screenshot(312).png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Choose Your Path to Insight"
     },
     {
-      "src": "assets/Screenshot(313).png",
+      "src": "/assets/Screenshot(313).png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Personalized Chat Predictions"
     },
     {
-      "src": "assets/Screenshot(314).png",
+      "src": "/assets/Screenshot(314).png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Personalized Chat Predictions"
     },
-      {
-      "src": "assets/Screenshot(315).png",
+    {
+      "src": "/assets/Screenshot(315).png",
       "sizes": "1920x960",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Personalized Chat Predictions"
     }
-    
   ],
   "shortcuts": [
     {
@@ -71,8 +70,9 @@
       "url": "/",
       "icons": [
         {
-          "src": "assets/icon-192.png",
-          "sizes": "192x192"
+          "src": "/assets/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     }
