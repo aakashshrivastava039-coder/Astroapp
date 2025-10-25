@@ -1,13 +1,12 @@
-const CACHE_NAME = 'vibe-oracle-cache-v7'; // Bump version for new assets/paths
+const CACHE_NAME = 'vibe-oracle-cache-v7'; // bump when you change cached assets
 const API_URL_PREFIX = 'https://generativelanguage.googleapis.com';
 
 // App Shell: Core files needed for the app to run offline.
-// Use absolute paths to ensure they are fetched correctly from the root.
+// Use absolute paths.
 const APP_SHELL_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/index.tsx',
   '/service-worker.js',
   '/assets/icon-192.png',
   '/assets/icon-512.png',
@@ -17,59 +16,54 @@ const APP_SHELL_URLS = [
   '/assets/Screenshot(315).png'
 ];
 
-// Install event: Caches the app shell.
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
         console.log('Opened cache and caching app shell');
         return Promise.all(
-          APP_SHELL_URLS.map(url => cache.add(new Request(url, {cache: 'reload'})).catch(err => console.warn(`Failed to cache ${url}:`, err)))
+          APP_SHELL_URLS.map(url =>
+            cache.add(new Request(url, { cache: 'reload' }))
+              .catch(err => {
+                console.warn(`Failed to cache ${url}:`, err);
+                // continue to attempt caching other assets
+              })
+          )
         );
       })
   );
 });
 
-// Activate event: Cleans up old caches.
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.filter(cacheName => cacheName !== CACHE_NAME)
-          .map(cacheName => caches.delete(cacheName))
+        cacheNames.filter(name => name !== CACHE_NAME)
+          .map(name => caches.delete(name))
       );
-    }).then(() => {
-      // Take control of the page immediately.
-      return self.clients.claim();
-    })
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch event: Serves content from cache or network.
 self.addEventListener('fetch', (event) => {
   const { request } = event;
 
-  // For API calls, use a network-first strategy.
+  // Network-first for API calls
   if (request.url.startsWith(API_URL_PREFIX)) {
     event.respondWith(
-      fetch(request).catch(() => {
-        // Return a generic error response if offline.
-        return new Response(JSON.stringify({ error: 'offline' }), {
+      fetch(request).catch(() =>
+        new Response(JSON.stringify({ error: 'offline' }), {
           headers: { 'Content-Type': 'application/json' }
-        });
-      })
+        })
+      )
     );
     return;
   }
-  
-  // For other requests (app shell), use a cache-first strategy.
+
+  // Cache-first for app shell & static assets
   event.respondWith(
     caches.match(request).then((response) => {
-      // If we have a cached response, return it.
-      if (response) {
-        return response;
-      }
-      // Otherwise, fetch from the network.
+      if (response) return response;
       return fetch(request);
     })
   );
