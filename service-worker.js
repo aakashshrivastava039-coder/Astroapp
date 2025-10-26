@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vibe-oracle-cache-v11'; // Bump version for new assets/paths
+const CACHE_NAME = 'vibe-oracle-cache-v12'; // Bump version for new assets/paths
 const API_URL_PREFIX = 'https://generativelanguage.googleapis.com';
 
 // App Shell: Core files needed for the app to run offline.
@@ -9,10 +9,10 @@ const APP_SHELL_URLS = [
   '/index.html',
   '/manifest.json',
   '/service-worker.js',
-  '/assets/icon-192.png',
-  '/assets/icon-512.png',
-  '/assets/screenshot1.png',
-  '/assets/screenshot2.png'
+  '/icon-192.png',
+  '/icon-512.png',
+  '/screenshot1.png',
+  '/screenshot2.png'
 ];
 
 // Install event: Caches the app shell.
