@@ -7,8 +7,9 @@
   "scope": "/",
   "lang": "en",
   "dir": "ltr",
-  "display": "standalone",
+  "display": "fullscreen",
   "display_override": [
+    "fullscreen",
     "standalone"
   ],
   "background_color": "#1e1b4b",
