@@ -1,10 +1,16 @@
 import React from 'react';
+import { translations } from '../localization';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  language: string;
+}
+
+const Footer: React.FC<FooterProps> = ({ language }) => {
+  const T = translations[language] || translations['en'];
   return (
     <footer className="w-full text-center p-4 mt-auto">
       <p className="text-xs text-gray-500">
-        Powered by advanced astrological models. All predictions are based on established astrological principles.
+        {T.footerText}
       </p>
     </footer>
   );

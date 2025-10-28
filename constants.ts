@@ -1,32 +1,5 @@
 import { Technique } from './types';
 
-export const TECHNIQUES: Technique[] = [
-  {
-    id: 'vedic_astrology',
-    name: 'Vedic Astrology',
-    description: 'Ancient Indian system of astrology to understand planetary influences on your life.',
-    enabled: true,
-  },
-  {
-    id: 'numerology',
-    name: 'Numerology',
-    description: 'Explore the mystical relationship between numbers and life events based on your birth date.',
-    enabled: true,
-  },
-  {
-    id: 'tarot',
-    name: 'Tarot Reading',
-    description: 'Algorithmic Tarot-style prediction for insights into your past, present, and future.',
-    enabled: true,
-  },
-  {
-    id: 'palmistry',
-    name: 'Palmistry',
-    description: 'Upload a photo of your palm to receive a personalized reading of your life lines and mounts.',
-    enabled: true,
-  },
-];
-
 export const LANGUAGES = [
     { code: 'en', name: 'English' },
     { code: 'hi', name: 'Hindi (हिन्दी)' },

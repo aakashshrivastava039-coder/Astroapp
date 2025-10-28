@@ -94,7 +94,7 @@ const Message: React.FC<MessageProps> = ({ message, onPlayAudio, isPlaying, stop
                     <OracleIcon className="w-5 h-5 text-white" />
                 </div>
             )}
-            <div className={`max-w-xl p-4 rounded-xl ${isUser ? 'bg-purple-800/80 rounded-br-none' : 'bg-indigo-950/70 rounded-bl-none'}`}>
+            <div className={`max-w-xl p-4 rounded-xl break-words ${isUser ? 'bg-purple-800/80 rounded-br-none' : 'bg-indigo-950/70 rounded-bl-none'}`}>
                  {showLoadingIndicator ? (
                     <div className="flex items-center gap-2 text-gray-400">
                         <SpinnerIcon className="w-5 h-5 animate-spin" />
@@ -323,7 +323,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
     : (currentLanguage === 'hi' ? 'एक प्रश्न पूछें...' : 'Ask a question...');
 
   return (
-    <div className="w-full max-w-3xl h-full flex flex-col bg-indigo-950/40 border border-indigo-800/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in relative">
+    <div className="w-full max-w-4xl h-full flex flex-col bg-indigo-950/40 border border-indigo-800/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in relative">
       <div id="messages" className="flex-grow p-6 space-y-6 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#4f46e5 #1e1b4b' }}>
         {messages.map((msg, index) => {
           const isLastMessage = index === messages.length - 1;
@@ -350,7 +350,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
                 <button
                 key={index}
                 onClick={() => handleSuggestionClick(suggestion)}
-                className="text-sm bg-indigo-800/70 hover:bg-indigo-700 px-4 py-2 rounded-full transition-colors"
+                className="text-sm bg-indigo-900/70 border border-indigo-700 hover:bg-indigo-800/90 px-4 py-2 rounded-full transition-colors"
                 >
                 {suggestion}
                 </button>
@@ -359,42 +359,42 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
         </div>
       )}
       <div className="p-4 bg-black/30 border-t border-indigo-800/50">
-        <form onSubmit={handleSend} className="flex items-center gap-4">
+        <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholderText}
             disabled={isLoading}
-            className="w-full bg-indigo-900 border border-indigo-700 rounded-lg p-3 text-white placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50"
+            className="flex-grow bg-indigo-900 border border-indigo-700 rounded-lg p-3 text-white placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50 transition-shadow"
           />
            <button
                 type="button"
                 onClick={onStartVoiceChat}
                 disabled={isLoading}
                 title="Start Live Conversation"
-                className="p-3 rounded-full bg-teal-600 hover:bg-teal-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500"
+                className="p-2.5 rounded-full bg-teal-600 hover:bg-teal-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 flex-shrink-0"
                 aria-label="Start Live Conversation"
             >
-                <HeadphonesIcon className="w-6 h-6 text-white" />
+                <HeadphonesIcon className="w-5 h-5 text-white" />
             </button>
            <button
                 type="button"
                 onClick={handleMicClick}
                 disabled={isLoading}
                 title={currentLanguage === 'hi' ? "बोलने के लिए दबाएँ" : "Press to speak"}
-                className={`p-3 rounded-full transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
+                className={`p-2.5 rounded-full transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 flex-shrink-0 ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
                 aria-label="Use microphone"
             >
-                <MicrophoneIcon className="w-6 h-6 text-white" />
+                <MicrophoneIcon className="w-5 h-5 text-white" />
             </button>
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-purple-600 text-white p-3 rounded-full hover:bg-purple-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500"
+            className="bg-purple-600 text-white p-2.5 rounded-full hover:bg-purple-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 flex-shrink-0"
             aria-label="Send message"
           >
-            <SendIcon className="w-6 h-6" />
+            <SendIcon className="w-5 h-5" />
           </button>
         </form>
       </div>

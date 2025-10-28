@@ -17,8 +17,28 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="Vibe Oracle" />
     
+    <!-- Google Fonts import for better Devanagari script rendering -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+      /* Apply a font that properly supports Devanagari script */
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: radial-gradient(circle at 50% 50%, #1e1b4b, #0c0a1d);
+        background-size: 200% 200%;
+        animation: cosmic-background 30s ease-in-out infinite;
+        word-break: break-word; /* Global safety net for text wrapping */
+      }
+      
+      @keyframes cosmic-background {
+        0% { background-position: 50% 0%; }
+        50% { background-position: 50% 100%; }
+        100% { background-position: 50% 0%; }
+      }
+
       /* Custom scrollbar for a more aesthetic feel */
       ::-webkit-scrollbar {
         width: 6px;
@@ -36,7 +56,7 @@
       
       /* Fade-in animation for screen transitions */
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
       }
       .animate-fade-in {
@@ -72,6 +92,11 @@
       button {
         user-select: none;
         -webkit-user-select: none; /* For Safari */
+      }
+      
+      /* Input focus glow for thematic consistency */
+      input:focus, textarea:focus {
+        box-shadow: 0 0 15px rgba(167, 139, 250, 0.4);
       }
     </style>
 <script type="importmap">

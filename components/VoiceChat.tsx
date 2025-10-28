@@ -292,8 +292,14 @@ Engage ${userData.name} in a natural, spoken conversation in ${language}.
             await sessionPromiseRef.current;
         } catch (error) {
             console.error("Failed to start voice session:", error);
+            let userMessage = 'Could not start the session.';
+            if (error instanceof DOMException && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
+                userMessage = 'Microphone access denied. Please enable it in your browser settings.';
+            } else if (error instanceof Error && error.message.toLowerCase().includes('permission dismissed')) {
+                userMessage = 'Permission request was dismissed. Please try again.';
+            }
             setStatus('error');
-            setStatusText('Could not start session.');
+            setStatusText(userMessage);
             cleanup();
         }
     }, [language, userData, techniqueName, chatHistory, cleanup]);

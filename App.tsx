@@ -299,11 +299,11 @@ function App() {
       case 'language':
         return <LanguageSelector onSelect={handleLanguageSelect} />;
       case 'technique':
-        return <TechniqueSelector onSelect={handleTechniqueSelect} />;
+        return <TechniqueSelector onSelect={handleTechniqueSelect} language={language} />;
       case 'form':
-        return <UserInfoForm technique={selectedTechnique!} onSubmit={handleFormSubmit} />;
+        return <UserInfoForm technique={selectedTechnique!} onSubmit={handleFormSubmit} language={language} />;
       case 'palmistry':
-        return <PalmistryScreen onImageSubmit={handlePalmImageSubmit} />;
+        return <PalmistryScreen onImageSubmit={handlePalmImageSubmit} language={language} />;
       case 'voiceChat':
         if (!userData || !selectedTechnique) {
           // This should not happen in the normal flow, but as a safeguard:
@@ -334,8 +334,8 @@ function App() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-b from-gray-900 via-indigo-950 to-black text-gray-200 font-sans">
-      {showDisclaimer && <DisclaimerModal onAccept={handleDisclaimerAccept} />}
+    <div className="flex flex-col h-screen bg-transparent text-gray-200">
+      {showDisclaimer && <DisclaimerModal onAccept={handleDisclaimerAccept} language={language} />}
       <Header 
         currentScreen={screen} 
         onLanguageChange={handleLanguageChange} 
@@ -345,10 +345,10 @@ function App() {
         installPrompt={installPrompt}
         onInstallClick={handleInstallClick}
       />
-      <main className="flex-grow flex flex-col items-center justify-center p-4 overflow-y-auto">
+      <main className="flex-grow flex flex-col items-center justify-start p-4 sm:p-6 md:p-8 overflow-y-auto">
         {renderScreen()}
       </main>
-      <Footer />
+      <Footer language={language} />
     </div>
   );
 }

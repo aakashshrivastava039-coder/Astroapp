@@ -3,16 +3,20 @@ import PrivacyConsentModal from './PrivacyConsentModal';
 import { CameraIcon } from './icons/CameraIcon';
 import { UploadIcon } from './icons/UploadIcon';
 import { SpinnerIcon } from './icons/SpinnerIcon';
+import { translations } from '../localization';
 
 interface PalmistryScreenProps {
   onImageSubmit: (imageBase64: string) => void;
+  language: string;
 }
 
-const PalmistryScreen: React.FC<PalmistryScreenProps> = ({ onImageSubmit }) => {
+const PalmistryScreen: React.FC<PalmistryScreenProps> = ({ onImageSubmit, language }) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [showConsent, setShowConsent] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const T = translations[language] || translations['en'];
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -41,32 +45,31 @@ const PalmistryScreen: React.FC<PalmistryScreenProps> = ({ onImageSubmit }) => {
   };
 
   if (showConsent) {
-    // A simple decline action reloads to reset the flow.
-    return <PrivacyConsentModal onAccept={() => setShowConsent(false)} onDecline={() => window.location.reload()} />;
+    return <PrivacyConsentModal onAccept={() => setShowConsent(false)} onDecline={() => window.location.reload()} language={language} />;
   }
 
   return (
     <div className="w-full max-w-2xl mx-auto bg-indigo-950/40 p-8 rounded-2xl border border-indigo-800/50 shadow-2xl animate-fade-in">
         <div className="text-center mb-6">
-            <h2 className="text-3xl font-bold text-purple-300">Provide Your Palm Photo</h2>
+            <h2 className="text-2xl md:text-3xl font-bold text-purple-300">{T.palmistryTitle}</h2>
             <p className="text-gray-400 mt-2">
-                Upload a clear photo of your dominant hand for analysis.
+                {T.palmistrySubtitle}
             </p>
         </div>
 
-        <div className="aspect-square w-full max-w-md mx-auto bg-indigo-900/50 rounded-lg border-2 border-dashed border-indigo-700 flex items-center justify-center relative overflow-hidden">
+        <div className="aspect-square w-full max-w-md mx-auto bg-indigo-900/50 rounded-lg border-2 border-dashed border-indigo-700 flex items-center justify-center relative overflow-hidden transition-colors hover:border-purple-500">
             {imagePreview ? (
                 <img src={imagePreview} alt="Palm preview" className="object-cover w-full h-full" />
             ) : (
                 <div className="text-center text-gray-400">
                     <CameraIcon className="w-16 h-16 mx-auto mb-2 text-indigo-500" />
-                    <p>Your palm image will appear here.</p>
+                    <p>{T.palmistryPreview}</p>
                 </div>
             )}
             {isLoading && (
                 <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center gap-4 text-white">
                     <SpinnerIcon className="w-12 h-12 animate-spin text-purple-400"/>
-                    <p className="text-lg font-semibold">Analyzing the lines of fate...</p>
+                    <p className="text-lg font-semibold">{T.palmistryAnalyzingText}</p>
                 </div>
             )}
         </div>
@@ -74,12 +77,12 @@ const PalmistryScreen: React.FC<PalmistryScreenProps> = ({ onImageSubmit }) => {
         {!imagePreview ? (
             <div className="mt-6">
                 <div className="text-center p-4 bg-black/20 rounded-lg border border-indigo-800">
-                    <h4 className="font-semibold text-purple-300 mb-2">Instructions for a Clear Photo:</h4>
+                    <h4 className="font-semibold text-purple-300 mb-2">{T.palmistryInstructionsTitle}</h4>
                     <ul className="text-sm text-gray-400 list-disc list-inside text-left space-y-1">
-                        <li>Use your dominant hand (the one you write with).</li>
-                        <li>Ensure good, even lighting. Avoid strong shadows.</li>
-                        <li>Keep your palm flat and fingers slightly apart.</li>
-                        <li>Make sure your entire palm is visible in the frame.</li>
+                        <li>{T.palmistryInstruction1}</li>
+                        <li>{T.palmistryInstruction2}</li>
+                        <li>{T.palmistryInstruction3}</li>
+                        <li>{T.palmistryInstruction4}</li>
                     </ul>
                 </div>
                 <div className="mt-6 flex justify-center gap-4">
@@ -91,17 +94,17 @@ const PalmistryScreen: React.FC<PalmistryScreenProps> = ({ onImageSubmit }) => {
                         className="hidden"
                     />
                     <button onClick={handleUploadClick} className="flex items-center gap-2 w-full justify-center bg-indigo-700 hover:bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                        <UploadIcon className="w-5 h-5"/> Upload Photo from Device
+                        <UploadIcon className="w-5 h-5"/> {T.palmistryUploadButton}
                     </button>
                 </div>
             </div>
         ) : (
             <div className="mt-6 flex justify-center gap-4">
                 <button onClick={handleRetake} className="w-1/2 bg-gray-700/50 hover:bg-gray-600/70 text-white font-bold py-3 px-4 rounded-lg transition-colors">
-                    Retake
+                    {T.palmistryRetakeButton}
                 </button>
                 <button onClick={handleAnalyze} disabled={isLoading} className="w-1/2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 shadow-lg disabled:opacity-50 flex items-center justify-center">
-                    {isLoading ? <SpinnerIcon className="w-6 h-6 animate-spin" /> : "Analyze Palm"}
+                    {isLoading ? <SpinnerIcon className="w-6 h-6 animate-spin" /> : T.palmistryAnalyzeButton}
                 </button>
             </div>
         )}
