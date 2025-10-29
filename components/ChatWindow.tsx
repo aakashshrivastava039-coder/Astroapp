@@ -8,11 +8,13 @@ import { SpeakerPlayIcon } from './icons/SpeakerPlayIcon';
 import { SpeakerStopIcon } from './icons/SpeakerStopIcon';
 import { MicrophoneIcon } from './icons/MicrophoneIcon';
 import { HeadphonesIcon } from './icons/HeadphonesIcon';
+import { BookmarkIcon } from './icons/BookmarkIcon';
 import { getSpeech } from '../services/geminiService';
 import { decode, decodeAudioData } from '../utils/audioUtils';
 import { LOADING_MESSAGES } from '../constants';
+import { useAuth } from '../contexts/AuthContext';
 
-// FIX: Add type definition for the Web Speech API to resolve "Cannot find name 'SpeechRecognition'".
+
 interface SpeechRecognition {
   continuous: boolean;
   interimResults: boolean;
@@ -25,7 +27,7 @@ interface SpeechRecognition {
   stop: () => void;
 }
 
-// A memoized component to prevent re-rendering of complex markdown content
+
 const RenderMessageContent = React.memo(({ content }: { content: string }) => {
   return (
     <div className="prose prose-sm prose-invert text-gray-300 max-w-none">
@@ -152,6 +154,7 @@ interface ChatWindowProps {
 }
 
 const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoading, currentLanguage, onStartVoiceChat }) => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
@@ -317,6 +320,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
 
   const lastMessage = messages[messages.length - 1];
   const showSuggestions = !isLoading && lastMessage?.role === 'model' && lastMessage.suggestions && lastMessage.suggestions.length > 0;
+  const showSaveChatPrompt = !isAuthenticated && messages.length > 1 && !isLoading;
 
   const placeholderText = isListening 
     ? (currentLanguage === 'hi' ? 'सुन रही हूँ...' : 'Listening...') 
@@ -343,6 +347,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
         })}
         <div ref={messagesEndRef} />
       </div>
+
+       {showSaveChatPrompt && (
+        <div className="p-4 border-t border-indigo-800/50 bg-indigo-950/60 text-center">
+            <button
+                onClick={openAuthModal}
+                className="inline-flex items-center gap-2 text-sm bg-purple-600 hover:bg-purple-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors"
+                >
+                <BookmarkIcon className="w-5 h-5"/>
+                Save this conversation
+            </button>
+        </div>
+      )}
+
        {showSuggestions && (
         <div className="p-4 border-t border-indigo-800/50">
             <div className="flex flex-wrap justify-center gap-2">

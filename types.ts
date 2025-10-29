@@ -17,6 +17,10 @@ export interface UserData {
   language: string;
 }
 
+export interface User {
+  email: string;
+}
+
 export interface LocalizedButtons {
   showDetails?: string;
   explainCalculation?: string;

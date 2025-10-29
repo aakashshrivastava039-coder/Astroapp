@@ -7,6 +7,8 @@ import { encode, decode, decodeAudioData } from '../utils/audioUtils';
 import { SpinnerIcon } from './icons/SpinnerIcon';
 import { MicrophoneIcon } from './icons/MicrophoneIcon';
 import { StopIcon } from './icons/StopIcon';
+import { OracleIcon } from './icons/OracleIcon';
+import { SparklesIcon } from './icons/SparklesIcon';
 
 // IMPORTANT: The API key must be set in the environment variables.
 // FIX: Switched from Vite-specific `import.meta.env.VITE_API_KEY` to `process.env.API_KEY` to align with coding guidelines and resolve TypeScript errors.
@@ -61,19 +63,6 @@ const VoiceVisualizer: React.FC<{
         </div>
     );
 };
-
-// Dummy icons for compilation
-const OracleIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    // FIX: Corrected malformed JSX in the OracleIcon's SVG tag by removing an extra '24"' that was causing a parsing error.
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" />
-    </svg>
-);
-const SparklesIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-        <path d="M12 3L9.27 9.27L3 12l6.27 2.73L12 21l2.73-6.27L21 12l-6.27-2.73z"/>
-    </svg>
-);
 
 // FIX: Define a local interface for transcription data to include the 'isFinal' property,
 // which is expected by the component logic but missing from the library's 'Transcription' type.
