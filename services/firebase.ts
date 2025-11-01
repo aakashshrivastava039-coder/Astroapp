@@ -2,7 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
-Your final, live Firebase configuration is now integrated.
+//Your final, live Firebase configuration is now integrated.
 const firebaseConfig = {
   apiKey: "AIzaSyDs-jG6SzOJBfXpqZ00FSu0NZqf8663gFo",
   authDomain: "vibe-oracle.firebaseapp.com",
