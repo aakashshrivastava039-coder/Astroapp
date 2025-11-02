@@ -250,7 +250,7 @@ function App() {
       {isAuthModalOpen && <LoginSignupModal />}
       {showDisclaimer && <DisclaimerModal onAccept={handleDisclaimerAccept} language={language} />}
       <Header currentScreen={screen} onLanguageChange={handleLanguageChange} currentLanguage={language} onLogoClick={resetApp} onBack={handleBack} installPrompt={installPrompt} onInstallClick={handleInstallClick} />
-      <main className="flex-grow flex flex-col items-center justify-start p-4 sm:p-6 md:p-8 overflow-y-auto">
+      <main className="flex-grow flex flex-col items-center justify-start p-4 sm:p-6 md:p-8 min-h-0">
         {renderScreen()}
       </main>
       <Footer language={language} />
