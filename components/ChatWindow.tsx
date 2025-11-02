@@ -6,26 +6,11 @@ import { SendIcon } from './icons/SendIcon';
 import { SpinnerIcon } from './icons/SpinnerIcon';
 import { SpeakerPlayIcon } from './icons/SpeakerPlayIcon';
 import { SpeakerStopIcon } from './icons/SpeakerStopIcon';
-import { MicrophoneIcon } from './icons/MicrophoneIcon';
-import { HeadphonesIcon } from './icons/HeadphonesIcon';
 import { BookmarkIcon } from './icons/BookmarkIcon';
 import { getSpeech } from '../services/geminiService';
 import { decode, decodeAudioData } from '../utils/audioUtils';
 import { LOADING_MESSAGES } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
-
-
-interface SpeechRecognition {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  onstart: (() => void) | null;
-  onend: (() => void) | null;
-  onerror: ((event: any) => void) | null;
-  onresult: ((event: any) => void) | null;
-  start: () => void;
-  stop: () => void;
-}
 
 
 const RenderMessageContent = React.memo(({ content }: { content: string }) => {
@@ -157,8 +142,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
   const { isAuthenticated, openAuthModal } = useAuth();
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
-  const [isListening, setIsListening] = useState(false);
 
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
@@ -206,40 +189,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
     };
   }, []);
 
-  useEffect(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        console.warn("Speech recognition not supported in this browser.");
-        return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = currentLanguage;
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsListening(false);
-    };
-
-    recognition.onresult = (event) => {
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-            if (event.results[i].isFinal) {
-                finalTranscript += event.results[i][0].transcript;
-            }
-        }
-        if (finalTranscript) {
-            setInput(prev => prev + finalTranscript);
-        }
-    };
-    
-    recognitionRef.current = recognition;
-  }, [currentLanguage]);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -253,18 +202,6 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
     if (input.trim() && !isLoading) {
       onSendMessage(input.trim());
       setInput('');
-    }
-  };
-
-  const handleMicClick = () => {
-    const recognition = recognitionRef.current;
-    if (!recognition) return;
-
-    if (isListening) {
-        recognition.stop();
-    } else {
-        setInput(''); // Clear input before starting
-        recognition.start();
     }
   };
 
@@ -322,9 +259,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
   const showSuggestions = !isLoading && lastMessage?.role === 'model' && lastMessage.suggestions && lastMessage.suggestions.length > 0;
   const showSaveChatPrompt = !isAuthenticated && messages.length > 1 && !isLoading;
 
-  const placeholderText = isListening 
-    ? (currentLanguage === 'hi' ? 'सुन रही हूँ...' : 'Listening...') 
-    : (currentLanguage === 'hi' ? 'एक प्रश्न पूछें...' : 'Ask a question...');
+  const placeholderText = currentLanguage === 'hi' ? 'एक प्रश्न पूछें...' : 'Ask a question...';
 
   return (
     <div className="w-full max-w-4xl h-full flex flex-col bg-indigo-950/40 border border-indigo-800/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in relative">
@@ -376,42 +311,22 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
         </div>
       )}
       <div className="p-4 bg-black/30 border-t border-indigo-800/50">
-        <form onSubmit={handleSend} className="flex items-center gap-2">
+        <form onSubmit={handleSend} className="flex items-center gap-3">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholderText}
             disabled={isLoading}
-            className="flex-grow bg-indigo-900 border border-indigo-700 rounded-lg p-3 text-white placeholder-gray-500 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50 transition-shadow"
+            className="flex-grow bg-indigo-700 border-0 rounded-full py-3 px-5 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
           />
-           <button
-                type="button"
-                onClick={onStartVoiceChat}
-                disabled={isLoading}
-                title="Start Live Conversation"
-                className="p-2.5 rounded-full bg-teal-600 hover:bg-teal-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 flex-shrink-0"
-                aria-label="Start Live Conversation"
-            >
-                <HeadphonesIcon className="w-5 h-5 text-white" />
-            </button>
-           <button
-                type="button"
-                onClick={handleMicClick}
-                disabled={isLoading}
-                title={currentLanguage === 'hi' ? "बोलने के लिए दबाएँ" : "Press to speak"}
-                className={`p-2.5 rounded-full transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 flex-shrink-0 ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-indigo-600 hover:bg-indigo-700'}`}
-                aria-label="Use microphone"
-            >
-                <MicrophoneIcon className="w-5 h-5 text-white" />
-            </button>
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-purple-600 text-white p-2.5 rounded-full hover:bg-purple-700 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-purple-500 flex-shrink-0"
+            className="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500 flex-shrink-0"
             aria-label="Send message"
           >
-            <SendIcon className="w-5 h-5" />
+            <SendIcon className="w-6 h-6" />
           </button>
         </form>
       </div>
