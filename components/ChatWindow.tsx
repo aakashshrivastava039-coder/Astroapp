@@ -11,7 +11,15 @@ import { getSpeech } from '../services/geminiService';
 import { decode, decodeAudioData } from '../utils/audioUtils';
 import { LOADING_MESSAGES } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
+import { HeadphonesIcon } from './icons/HeadphonesIcon';
+import { MicrophoneIcon } from './icons/MicrophoneIcon';
 
+declare global {
+  interface Window {
+    SpeechRecognition: any;
+    webkitSpeechRecognition: any;
+  }
+}
 
 const RenderMessageContent = React.memo(({ content }: { content: string }) => {
   return (
@@ -143,6 +151,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  const [isRecording, setIsRecording] = useState(false);
+  // FIX: The type 'SpeechRecognition' is not available globally. Changed to 'any' to match the type on the window object.
+  const recognitionRef = useRef<any | null>(null);
+
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioSourceRef = useRef<AudioBufferSourceNode | null>(null);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
@@ -150,6 +162,56 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
   
   const [loadingText, setLoadingText] = useState('');
   const loadingIntervalRef = useRef<number | null>(null);
+
+  // Speech Recognition setup
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn("Speech recognition is not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = currentLanguage;
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0])
+        .map((result: any) => result.transcript)
+        .join('');
+      setInput(transcript);
+    };
+
+    recognition.onend = () => {
+      setIsRecording(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      setIsRecording(false);
+    };
+
+    recognitionRef.current = recognition;
+
+    return () => {
+      recognition.stop();
+    };
+  }, [currentLanguage]);
+
+  const handleMicClick = useCallback(() => {
+    if (!recognitionRef.current) return;
+
+    if (isRecording) {
+      recognitionRef.current.stop();
+    } else {
+      setInput('');
+      recognitionRef.current.start();
+      setIsRecording(true);
+    }
+  }, [isRecording]);
+
 
   useEffect(() => {
     if (isLoading) {
@@ -185,7 +247,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
     
     return () => {
         audioSourceRef.current?.stop();
-        audioContextRef.current?.close();
+        audioContextRef.current?.close().catch(console.error);
     };
   }, []);
 
@@ -199,6 +261,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isRecording && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsRecording(false);
+    }
     if (input.trim() && !isLoading) {
       onSendMessage(input.trim());
       setInput('');
@@ -260,6 +326,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
   const showSaveChatPrompt = !isAuthenticated && messages.length > 1 && !isLoading;
 
   const placeholderText = currentLanguage === 'hi' ? 'एक प्रश्न पूछें...' : 'Ask a question...';
+  const recordingPlaceholder = currentLanguage === 'hi' ? 'सुन रहा है...' : 'Listening...';
 
   return (
     <div className="w-full max-w-4xl h-full flex flex-col bg-indigo-950/40 border border-indigo-800/50 rounded-2xl shadow-2xl overflow-hidden animate-fade-in relative">
@@ -312,18 +379,37 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
       )}
       <div className="p-4 bg-black/30 border-t border-indigo-800/50">
         <form onSubmit={handleSend} className="flex items-center gap-2">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder={placeholderText}
-            disabled={isLoading}
-            className="flex-grow bg-indigo-800 border-0 rounded-full py-1.5 px-4 text-sm text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
-          />
+          <button
+              type="button"
+              onClick={onStartVoiceChat}
+              className="bg-indigo-600 text-white p-2 rounded-full hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-indigo-500 flex-shrink-0"
+              aria-label="Start voice chat"
+          >
+              <HeadphonesIcon className="w-5 h-5" />
+          </button>
+          <div className="relative flex-grow">
+              <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={isRecording ? recordingPlaceholder : placeholderText}
+                  disabled={isLoading || isRecording}
+                  className="w-full bg-indigo-800 border-0 rounded-full py-2 px-4 pr-10 text-sm text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
+              />
+              <button
+                  type="button"
+                  onClick={handleMicClick}
+                  disabled={isLoading}
+                  className={`absolute inset-y-0 right-0 flex items-center pr-3 transition-colors ${isRecording ? 'text-red-400 animate-pulse' : 'text-indigo-300 hover:text-white'}`}
+                  aria-label={isRecording ? "Stop recording speech-to-text" : "Start recording speech-to-text"}
+              >
+                  <MicrophoneIcon className="w-5 h-5" />
+              </button>
+          </div>
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-teal-500 text-white p-1.5 rounded-full hover:bg-teal-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 flex-shrink-0"
+            className="bg-teal-500 text-white p-2 rounded-full hover:bg-teal-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 flex-shrink-0"
             aria-label="Send message"
           >
             <SendIcon className="w-5 h-5" />
