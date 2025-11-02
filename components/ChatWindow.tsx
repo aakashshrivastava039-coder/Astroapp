@@ -311,19 +311,19 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
         </div>
       )}
       <div className="p-4 bg-black/30 border-t border-indigo-800/50">
-        <form onSubmit={handleSend} className="flex items-center gap-3">
+        <form onSubmit={handleSend} className="flex items-center gap-2">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholderText}
             disabled={isLoading}
-            className="flex-grow bg-indigo-700 border-0 rounded-full py-3 px-5 text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
+            className="flex-grow bg-indigo-900 border-0 rounded-xl py-2.5 px-4 text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-green-500 text-white p-3 rounded-full hover:bg-green-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-green-500 flex-shrink-0"
+            className="bg-teal-500 text-white p-2.5 rounded-full hover:bg-teal-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 flex-shrink-0"
             aria-label="Send message"
           >
             <SendIcon className="w-6 h-6" />
