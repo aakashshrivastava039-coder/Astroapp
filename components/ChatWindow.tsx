@@ -318,15 +318,15 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ messages, onSendMessage, isLoad
             onChange={(e) => setInput(e.target.value)}
             placeholder={placeholderText}
             disabled={isLoading}
-            className="flex-grow bg-indigo-900 border-0 rounded-xl py-2.5 px-4 text-white placeholder-indigo-400 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
+            className="flex-grow bg-indigo-800 border-0 rounded-full py-1.5 px-4 text-sm text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-shadow"
           />
           <button
             type="submit"
             disabled={isLoading || !input.trim()}
-            className="bg-teal-500 text-white p-2.5 rounded-full hover:bg-teal-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 flex-shrink-0"
+            className="bg-teal-500 text-white p-1.5 rounded-full hover:bg-teal-600 transition-colors disabled:bg-gray-600 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-teal-500 flex-shrink-0"
             aria-label="Send message"
           >
-            <SendIcon className="w-6 h-6" />
+            <SendIcon className="w-5 h-5" />
           </button>
         </form>
       </div>
