@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.vercel.vibeoracle.twa",
+        "sha256_cert_fingerprints": ["38:80:0D:2E:F2:4E:B3:BD:E0:C1:19:BC:5D:D0:27:6C:5D:93:C3:4A:2B:6A:1D:94:6E:E0:47:59:D3:BC:BE:94"]
+      }
+    }]
